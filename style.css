@@ -1,0 +1,40 @@
+html, body{
+    padding: 0;
+    height: 0;
+}
+
+.wrapper{
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sudoku{
+    height: min(80vh, 80vw);
+    width: min(80vh, 80vw);
+    background-color: gray;
+    border-radius: 5px;
+    display: grid;
+    grid-template-rows: repeat(9, 1fr);
+    grid-template-columns: repeat(9, 1fr);
+}
+
+.cell{
+    border: 1px solid white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: sans-serif;
+    font-size: min(5vh, 5vw);
+    color: white;
+    user-select: none;
+}
+
+.cell:hover{
+    background-color: rgba(0, 0, 0, 0.14);
+}
+
+.cell.selected{
+    background-color: rgba(0, 0, 0, 0.2);
+}
