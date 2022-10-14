@@ -90,13 +90,24 @@ describe('Sudoku', () => {
         let invalidSudoku: Sudoku;
 
         before(() => {
+            const solved = [
+                3, 1, 6, 5, 7, 8, 4, 9, 2,
+                5, 2, 9, 1, 3, 4, 7, 6, 8,
+                4, 8, 7, 6, 2, 9, 5, 3, 1,
+                2, 6, 3, 4, 1, 5, 9, 8, 7,
+                9, 7, 4, 8, 6, 3, 1, 2, 5,
+                8, 5, 1, 7, 9, 2, 6, 4, 3,
+                1, 3, 8, 9, 4, 7, 2, 5, 6,
+                6, 9, 2, 3, 5, 1, 8, 7, 4,
+                7, 4, 5, 2, 8, 6, 3, 1, 9,
+            ]
+
             validSudoku = new Sudoku();
-            for (let i = 0; i < 9; i++) {
-                for (let j = 0; j < 9; j++) {
-                    let index = i * 9 + j;
-                    validSudoku.set(index, ((j + i) % 9) + 1);
-                }
-            }
+
+
+            solved.forEach((value, index) => {
+                validSudoku.set(index, value);
+            })
 
             invalidSudoku = new Sudoku();
             for (let i = 0; i < 9; i++) {
@@ -125,10 +136,10 @@ describe('Sudoku', () => {
         });
 
         it('Can check a square', () => {
-            let result = validSudoku.checkRow(8);
+            let result = validSudoku.checkSquare(8);
             expect(result).to.be.true;
 
-            result = invalidSudoku.checkRow(0);
+            result = invalidSudoku.checkSquare(0);
             expect(result).to.be.false;
         });
 

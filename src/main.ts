@@ -1,11 +1,9 @@
 import { Sudoku } from "./Sudoku";
 
 const sudoku = new Sudoku();
-
 const sudokuEl = document.querySelector<HTMLElement>('.sudoku')!;
 const cells = [...sudokuEl.querySelectorAll<HTMLElement>('.cell')];
-let selectedCell:HTMLElement|null = null;
-
+let selectedCell: HTMLElement | null = null;
 
 cells.forEach((cell, index) => {
     cell.addEventListener('click', () => {
@@ -17,15 +15,14 @@ cells.forEach((cell, index) => {
     const observer = new MutationObserver((mutations) => {
         mutations.forEach(mutation => {
             const node = mutation.addedNodes[0];
-            if(node.nodeName == '#text'){
+            if (node.nodeName == '#text') {
                 sudoku.set(index, Number.parseInt(node.nodeValue || ''));
-                console.log(sudoku.get(index));
+                if (sudoku.checkAll()) alert('DING DING');
             }
         });
     })
 
-    observer.observe(cell, {attributes: false, subtree:false, characterData:false, childList:true});
-    cell.innerHTML = index+'';
+    observer.observe(cell, { attributes: false, subtree: false, characterData: false, childList: true });
 })
 
 document.addEventListener('keypress', e => {

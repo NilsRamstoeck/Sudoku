@@ -1,6 +1,7 @@
 const AMT_CELLS = 81;
 const MIN_VALUE = 1;
-const MAX_VALUE = 9;
+const MAX_VALUE = 9; //NEEDS SQUARE ROOT TO BE INTEGER
+const PUZZLE_ROOT = Math.sqrt(MAX_VALUE);
 
 export class Sudoku {
 
@@ -24,10 +25,11 @@ export class Sudoku {
         return true;
     }
 
+    //Checks a squence of values from MIN_VALUE to MAX_VALUE for duplicates
     private static *v() {
-        let dict:number[] = [];
-        for(let i = 0; i < MAX_VALUE; i++){
-            dict.push(i+1);
+        let dict: number[] = [];
+        for (let i = 0; i < MAX_VALUE; i++) {
+            dict.push(i + 1);
         }
         let check: number;
         while (dict.length > 0) {
@@ -40,6 +42,7 @@ export class Sudoku {
         return true;
     }
 
+    //Wrapper for validator generator
     static validator() {
         const validator = Sudoku.v();
         validator.next();
@@ -89,19 +92,22 @@ export class Sudoku {
     checkSquare(square: number) {
         if (!Sudoku.valueIsInBounds(square + 1)) return false;
         const validator = Sudoku.validator();
-        
+
         for (let i = 0; i < MAX_VALUE; i++) {
-            const squareRow = Math.floor(square/3)*3;
-            const squareCol = square%3 * 3;
+            //Get column and row of first cell of the square
+            const squareRow = Math.floor(square / PUZZLE_ROOT) * PUZZLE_ROOT;
+            const squareCol = square % PUZZLE_ROOT * PUZZLE_ROOT;
 
-            const colMod = i%3;
-            const rowMod = Math.floor(i/3);
+            //get current column of row of the index within local square space (between 0 and PUZZLE_ROOT)
+            const colMod = i % PUZZLE_ROOT;
+            const rowMod = Math.floor(i / PUZZLE_ROOT);
 
+            //Translate local square space to puzzle space
             const row = squareRow + rowMod;
             const col = squareCol + colMod;
-            
+
             const index = row * MAX_VALUE + col;
-            
+
             const state = validator.next(this.cells[index]);
             if (state.done) {
                 return false;
@@ -109,6 +115,15 @@ export class Sudoku {
         }
         if (!validator.next().value == true) return false;
         return true;
+    }
+
+    checkAll() {
+        let result = true;
+        for (let i = 0; i < MAX_VALUE; i++){
+            result &&= this.checkColumn(i) && this.checkRow(i) && this.checkSquare(i);
+            if(!result) return result;  //exit early
+        }
+        return result;
     }
 }
 
