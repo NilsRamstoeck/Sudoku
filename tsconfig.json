@@ -2,8 +2,8 @@
   "compilerOptions": {
     "outDir": "dist",
     "target": "esnext",
-    "useDefineForClassFields": true,
     "module": "esnext",
+    "useDefineForClassFields": true,
     "moduleResolution": "node",
     "strict": true,
     "sourceMap": true,

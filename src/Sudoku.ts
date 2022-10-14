@@ -1,15 +1,20 @@
-const AMT_CELLS = 81;
-const MIN_VALUE = 1;
-const MAX_VALUE = 9; //NEEDS SQUARE ROOT TO BE INTEGER
-const PUZZLE_ROOT = Math.sqrt(MAX_VALUE);
+export const AMT_CELLS = 81;
+export const MIN_VALUE = 1;
+export const MAX_VALUE = 9; //NEEDS SQUARE ROOT TO BE INTEGER
+export const PUZZLE_ROOT = Math.sqrt(MAX_VALUE);
 
-export class Sudoku {
+export class Sudoku extends EventTarget {
 
-    cells: number[] = [];
+    private cells: number[] = [];
+
+    getCells(){
+        return JSON.parse(JSON.stringify(this.cells));
+    }
 
     constructor() {
+        super();
         for (let i = 0; i < AMT_CELLS; i++) {
-            this.cells.push(0);
+            this.cells.push(-1);
         }
     }
 
@@ -52,13 +57,66 @@ export class Sudoku {
     set(cell: number, value: number) {
         if (!Sudoku.cellIsInBounds(cell)) return false;
         if (!Sudoku.valueIsInBounds(value)) return false;
+        if (this.cells[cell] == value) return true;
+
         this.cells[cell] = value;
+        //TODO: Debounce
+        const e = new CustomEvent('cell-set', {
+            detail: {
+                index: cell,
+                value
+            }
+        });
+        this.dispatchEvent(e);
         return true;
     }
 
     get(cell: number) {
         if (!Sudoku.cellIsInBounds(cell)) return -1;
         return this.cells[cell];
+    }
+
+    getColumn(col: number) {
+        if (!Sudoku.valueIsInBounds(col + 1)) return [];
+        const values: number[] = [];
+        for (let i = 0; i < MAX_VALUE; i++) {
+            const index = i * MAX_VALUE + col;
+            values.push(this.cells[index]);
+        }
+        return values;
+    }
+
+    getRow(row: number) {
+        if (!Sudoku.valueIsInBounds(row + 1)) return [];
+        const values: number[] = [];
+        for (let i = 0; i < MAX_VALUE; i++) {
+            const index = row * MAX_VALUE + i;
+            values.push(this.cells[index]);
+        }
+        return values;
+    }
+
+    getSquare(square: number) {
+        if (!Sudoku.valueIsInBounds(square + 1)) return [];
+
+        const values: number[] = [];
+        for (let i = 0; i < MAX_VALUE; i++) {
+            //Get column and row of first cell of the square
+            const squareRow = Math.floor(square / PUZZLE_ROOT) * PUZZLE_ROOT;
+            const squareCol = square % PUZZLE_ROOT * PUZZLE_ROOT;
+
+            //get current column of row of the index within local square space (between 0 and PUZZLE_ROOT)
+            const colMod = i % PUZZLE_ROOT;
+            const rowMod = Math.floor(i / PUZZLE_ROOT);
+
+            //Translate local square space to puzzle space
+            const row = squareRow + rowMod;
+            const col = squareCol + colMod;
+
+            const index = row * MAX_VALUE + col;
+            values.push(this.cells[index]);
+        }
+        return values;
     }
 
     checkColumn(col: number) {
@@ -119,9 +177,9 @@ export class Sudoku {
 
     checkAll() {
         let result = true;
-        for (let i = 0; i < MAX_VALUE; i++){
+        for (let i = 0; i < MAX_VALUE; i++) {
             result &&= this.checkColumn(i) && this.checkRow(i) && this.checkSquare(i);
-            if(!result) return result;  //exit early
+            if (!result) return result;  //exit early
         }
         return result;
     }
