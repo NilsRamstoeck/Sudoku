@@ -34,8 +34,9 @@ html, body{
 }
 
 .cell::after{
+    font-size: 18px;
     position: absolute;
-    content: '';
+    content: attr(index);
     width: 100%;
     height: 100%;
 }

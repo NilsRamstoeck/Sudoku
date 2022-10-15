@@ -7,6 +7,8 @@ const cells = [...document.querySelectorAll<HTMLElement>('.sudoku .cell')];
 
 const puzzle = [1, 2, 3, -1, -1, -1, -1, -1, -1, 4, 5, 6, 2, 1, 3, 7, 9, 8, 7, 8, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
 
+puzzle[24] = 4;
+
 //Selection of cells
 document.addEventListener('click', (e) => {
     cells.forEach(cell => cell.classList.toggle('selected', false));
@@ -17,8 +19,6 @@ document.addEventListener('click', (e) => {
     const index = cells.indexOf(targetEl);
     const options = solver.getCellOption(index);
 
-    console.log(index, options?.options);
-    
 })
 
 //Number input
@@ -50,6 +50,7 @@ cells.forEach((cell, index) => {
     })
     observer.observe(cell, { attributes: false, subtree: false, characterData: false, childList: true });
     cell.innerHTML = (puzzle[index] > 0 ? puzzle[index] : '') + '';
+    // cell.setAttribute('index', index+'');
 })
 
 sudoku.addEventListener('cell-set', ((e: CustomEvent<{ value: number, index: number }>) => {
@@ -63,6 +64,10 @@ sudoku.addEventListener('cell-set', ((e: CustomEvent<{ value: number, index: num
         el.classList.toggle('invalid', false);
         el.classList.toggle('valid', false);
     })
+
+    if (!solver.checkSolvable()) {
+        cells[index].classList.toggle('invalid', true);
+    }
 
     const methods = [
         {
@@ -93,7 +98,6 @@ sudoku.addEventListener('cell-set', ((e: CustomEvent<{ value: number, index: num
             });
         }
     }
-
 }) as EventListener);
 
 //Handle sudoku solved
@@ -101,8 +105,8 @@ sudoku.addEventListener('solved', () => {
     alert('DING DING DING');
 })
 
-function solve() {
-    solver.solve();
+async function solve(step: number) {
+    return await solver.solve(step);
 }
 
 function getHTMLColumn(col: number) {
@@ -150,7 +154,10 @@ function getHTMLSquare(square: number) {
 
 //expose solve and sudoku
 (<any>window).solve = solve;
+(<any>window).solver = solver;
 (<any>window).sudoku = sudoku;
 (<any>window).getHTMLColumn = getHTMLColumn;
 (<any>window).getHTMLRow = getHTMLRow;
-(<any>window).getHTMLSquare = getHTMLSquare;
+(<any>window).getHTMLSquare = getHTMLSquare
+
+setTimeout(() => { solve(300) }, 500);

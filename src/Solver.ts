@@ -8,37 +8,85 @@ export class Solver {
     }
 
     async solve(step = 0) {
-        this.checkSolvable();
+        if (!this.checkSolvable()) return false;
         const wfc = this.wfc();
-        let state:ReturnType<typeof wfc.next>;
-        do{
+        let state: ReturnType<typeof wfc.next>;
+        do {
             state = wfc.next();
             const animation = new Promise<void>(resolve => setTimeout(_ => resolve(), step));
             if (step > 0) await animation;
-        }while(!state.done);
-        if(!state.value){
-            alert('Unsolvable!');
-        }
+        } while (!state.done);
+        return true;
     }
 
-    checkSolvable(){
+    checkSolvable() {
         //if in one row, column or square the amount of options is smaller than the fields that share them
         //a sudoku is not solvable
         const cellOptions = this.getCellOptions();
 
-        const rows:any = [];
-        //organize options into 9 squares, columns and rows
-        console.log(cellOptions.length);
-        
+        type Option = typeof cellOptions[0];
+
+        const contextsList: Option[][][] = [];
+
+        const rows: Option[][] = [];
+        const columns: Option[][] = [];
+        const squares: Option[][] = [];
+
+        for (let i = 0; i < MAX_VALUE; i++) {
+            rows.push([]);
+            columns.push([]);
+            squares.push([]);
+        }
+
+        for (const option of cellOptions) {
+            const coords = Sudoku.getCellCoordinates(option.index)!;
+            rows[coords.row].push(option);
+            columns[coords.col].push(option);
+            squares[coords.square].push(option);
+        }
+
+        contextsList.push(rows);
+        contextsList.push(columns);
+        contextsList.push(squares);
+
+        for (const contexts of contextsList) {
+            for (const context of contexts) {
+                //get unique option sets
+                const optionSets: { count: number, options: number[] }[] = [];
+                for (const option of context) {
+
+                    let duplicate = false;
+                    let unsolvable = false;
+                    optionSets.forEach(compareOptions => {
+                        if (duplicate) return;
+                        if (compareOptions.options.length > option.options.length) {
+                            duplicate = compareOptions.options.every((value, index) => value == option.options[index]);
+                        } else {
+                            duplicate = option.options.every((value, index) => value == compareOptions.options[index]);
+                        }
+                        if (!duplicate) return;
+                        compareOptions.count++;
+                        unsolvable = compareOptions.count > compareOptions.options.length;
+                    });
+                    if (unsolvable) return false;
+                    if (!duplicate) optionSets.push({
+                        count: 1,
+                        options: option.options
+                    });
+                }
+            }
+        }
+
+        return true;
     }
 
     *wfc() {
         while (true) {
             const cellOptions = this.getCellOptions();
             if (cellOptions.length == 0) return true;
-            
+
             for (const cell of cellOptions) {
-                if(cell.options.length == 0) return false;
+                if (cell.options.length == 0) return false;
                 if (cell.options.length > 1) break;
                 this.sudoku.set(cell.index, cell.options[0]);
                 yield;
@@ -49,7 +97,7 @@ export class Solver {
                 yield;
                 continue;
             }
-            
+
         }
     }
 
