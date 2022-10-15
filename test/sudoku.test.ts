@@ -31,7 +31,7 @@ describe('Sudoku', () => {
             expect(result).to.equal(-1);
 
             result = sudoku.get(20);
-            expect(result).to.equal(0);
+            expect(result).to.equal(-1);
         });
     });
 
@@ -58,29 +58,43 @@ describe('Sudoku', () => {
             expect(Sudoku.valueIsInBounds(10)).to.be.false
         })
 
-        it('Can validate section', () => {
-            let valid = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-            let invalid = [1, 2, 3, 4, 5, 6, 7, 8, 8];
+        describe('Can validate section', () => {
 
-            let validator = Sudoku.validator();
-            for (let value of valid) {
-                validator.next(value);
-            }
-
-            let result = validator.next();
-
-            expect(result.done).to.be.true;
-            expect(result.value).to.be.true;
-
-            validator = Sudoku.validator();
-            for (let value of invalid) {
-                const state = validator.next(value);
-                if (state.done) {
-                    expect(state.value).to.be.false;
-                    break;
+            it('can detect valid', () => {
+                const valid = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+                let validator = Sudoku.validator();
+                for (let value of valid) {
+                    validator.next(value);
                 }
-            }
+                let result = validator.next();
+                expect(result.done).to.be.true;
+                expect(result.value).to.equal(1);
 
+            })
+
+            it('can detect invalid', (done) => {
+                const valid = [1, 2, 3, 4, 5, 6, 7, 8, 8];
+                let validator = Sudoku.validator();
+                for (let value of valid) {
+                    if(validator.next(value).done){
+                        done();
+                        return;
+                    };
+                }
+                done(new Error('Was detected as valid'))
+            })
+
+            it('can detect unfinished', () => {
+                const valid = [1, 2, 3, 4, -1, 6, 7, 8, 9];
+                let validator = Sudoku.validator();
+                for (let value of valid) {
+                    validator.next(value);
+                }
+                let result = validator.next();
+                expect(result.done).to.be.true;
+                expect(result.value).to.equal(0);
+
+            })
         })
 
     })
@@ -88,6 +102,7 @@ describe('Sudoku', () => {
     describe('Check if solved', () => {
         let validSudoku: Sudoku;
         let invalidSudoku: Sudoku;
+        let undoneSudoku: Sudoku;
 
         before(() => {
             const solved = [
@@ -109,6 +124,25 @@ describe('Sudoku', () => {
                 validSudoku.set(index, value);
             })
 
+            const undone = [
+                -1, 1, 6, 5, 7, 8, 4, 9, -1,
+                5, -1, 9, 1, 3, 4, 7, -1, 8,
+                4, 8, -1, 6, 2, 9, -1, 3, 1,
+                2, 6, 3, -1, 1, -1, 9, 8, 7,
+                9, -1, 4, 8, -1, 3, 1, 2, 5,
+                8, 5, 1, -1, 9, -1, 6, 4, 3,
+                1, 3, -1, 9, 4, 7, -1, 5, 6,
+                6, -1, 2, 3, 5, 1, 8, -1, 4,
+                -1, 4, 5, 2, 8, 6, 3, 1, -1,
+            ]
+
+            undoneSudoku = new Sudoku();
+
+
+            undone.forEach((value, index) => {
+                undoneSudoku.set(index, value);
+            })
+
             invalidSudoku = new Sudoku();
             for (let i = 0; i < 9; i++) {
                 for (let j = 0; j < 9; j++) {
@@ -121,26 +155,35 @@ describe('Sudoku', () => {
 
         it('Can check a column', () => {
             let result = validSudoku.checkColumn(0);
-            expect(result).to.be.true;
+            expect(result).to.equal(1);
 
             result = invalidSudoku.checkColumn(1);
-            expect(result).to.be.false;
+            expect(result).to.equal(-1);
+
+            result = undoneSudoku.checkColumn(3);
+            expect(result).to.equal(0);
         });
 
         it('Can check a row', () => {
             let result = validSudoku.checkRow(0);
-            expect(result).to.be.true;
+            expect(result).to.equal(1);
 
             result = invalidSudoku.checkRow(0);
-            expect(result).to.be.false;
+            expect(result).to.equal(-1);
+
+            result = undoneSudoku.checkRow(3);
+            expect(result).to.equal(0);
         });
 
         it('Can check a square', () => {
             let result = validSudoku.checkSquare(8);
-            expect(result).to.be.true;
+            expect(result).to.equal(1);
 
             result = invalidSudoku.checkSquare(0);
-            expect(result).to.be.false;
+            expect(result).to.equal(-1);
+            
+            result = undoneSudoku.checkSquare(3);
+            expect(result).to.equal(0);
         });
 
     });

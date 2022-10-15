@@ -31,20 +31,22 @@ export class Sudoku extends EventTarget {
     }
 
     //Checks a squence of values from MIN_VALUE to MAX_VALUE for duplicates
+    //return -1 for invalid, 1 for valid and 0 for possible but not fully filled out
     private static *v() {
         let dict: number[] = [];
         for (let i = 0; i < MAX_VALUE; i++) {
             dict.push(i + 1);
         }
         let check: number;
-        while (dict.length > 0) {
+        for (let i = 0; i < MAX_VALUE; i++) {
             check = yield;
-            if (!Sudoku.valueIsInBounds(check)) return false;
-            if (dict.indexOf(check) == -1) return false;
+            if (check == -1) continue;
+            if (!Sudoku.valueIsInBounds(check)) return -1;
+            if (dict.indexOf(check) == -1) return -1;
             dict.splice(dict.indexOf(check), 1);
         }
         yield;
-        return true;
+        return dict.length > 0 ? 0 : 1;
     }
 
     //Wrapper for validator generator
@@ -61,15 +63,17 @@ export class Sudoku extends EventTarget {
 
         this.cells[cell] = value;
         //TODO: Debounce
-        const e = new CustomEvent('cell-set', {
-            detail: {
-                index: cell,
-                value
-            }
-        });
-        this.dispatchEvent(e);
+        try {
+            const e = new CustomEvent('cell-set', {
+                detail: {
+                    index: cell,
+                    value
+                }
+            });
+            this.dispatchEvent(e);
 
-        if (this.checkAll()) this.dispatchEvent(new Event('solved'));
+            if (this.checkAll()) this.dispatchEvent(new Event('solved'));
+        } catch (_) { };
 
         return true;
     }
@@ -77,13 +81,15 @@ export class Sudoku extends EventTarget {
     unset(cell: number) {
         if (!Sudoku.cellIsInBounds(cell)) return false;
         this.cells[cell] = -1;
-        const e = new CustomEvent('cell-set', {
-            detail: {
-                index: cell,
-                value: -1
-            }
-        });
-        this.dispatchEvent(e);
+        try {
+            const e = new CustomEvent('cell-set', {
+                detail: {
+                    index: cell,
+                    value: -1
+                }
+            });
+            this.dispatchEvent(e);
+        } catch (_) { }
         return true;
     }
 
@@ -136,35 +142,33 @@ export class Sudoku extends EventTarget {
     }
 
     checkColumn(col: number) {
-        if (!Sudoku.valueIsInBounds(col + 1)) return false;
+        if (!Sudoku.valueIsInBounds(col + 1)) return -1;
         const validator = Sudoku.validator();
         for (let i = 0; i < MAX_VALUE; i++) {
             const index = i * MAX_VALUE + col;
             const state = validator.next(this.cells[index]);
             if (state.done) {
-                return false;
+                return -1;
             }
         }
-        if (!validator.next().value == true) return false;
-        return true;
+        return validator.next().value!;
     }
 
     checkRow(row: number) {
-        if (!Sudoku.valueIsInBounds(row + 1)) return false;
+        if (!Sudoku.valueIsInBounds(row + 1)) return -1;
         const validator = Sudoku.validator();
         for (let i = 0; i < MAX_VALUE; i++) {
             const index = row * MAX_VALUE + i;
             const state = validator.next(this.cells[index]);
             if (state.done) {
-                return false;
+                return -1;
             }
         }
-        if (!validator.next().value == true) return false;
-        return true;
+        return validator.next().value!;
     }
 
     checkSquare(square: number) {
-        if (!Sudoku.valueIsInBounds(square + 1)) return false;
+        if (!Sudoku.valueIsInBounds(square + 1)) return -1;
         const validator = Sudoku.validator();
 
         for (let i = 0; i < MAX_VALUE; i++) {
@@ -184,17 +188,16 @@ export class Sudoku extends EventTarget {
 
             const state = validator.next(this.cells[index]);
             if (state.done) {
-                return false;
+                return -1;
             }
         }
-        if (!validator.next().value == true) return false;
-        return true;
+        return validator.next().value!;
     }
 
     checkAll() {
         let result = true;
         for (let i = 0; i < MAX_VALUE; i++) {
-            result &&= this.checkColumn(i) && this.checkRow(i) && this.checkSquare(i);
+            result &&= this.checkColumn(i) + this.checkRow(i) + this.checkSquare(i) == 3;
             if (!result) return result;  //exit early
         }
         return result;
