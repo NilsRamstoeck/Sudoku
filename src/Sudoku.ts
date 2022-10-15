@@ -7,7 +7,7 @@ export class Sudoku extends EventTarget {
 
     private cells: number[] = [];
 
-    getCells(){
+    getCells() {
         return JSON.parse(JSON.stringify(this.cells));
     }
 
@@ -57,7 +57,7 @@ export class Sudoku extends EventTarget {
     set(cell: number, value: number) {
         if (!Sudoku.cellIsInBounds(cell)) return false;
         if (!Sudoku.valueIsInBounds(value)) return false;
-        if (this.cells[cell] == value) return true;
+        if (this.cells[cell] == value) return false;
 
         this.cells[cell] = value;
         //TODO: Debounce
@@ -65,6 +65,22 @@ export class Sudoku extends EventTarget {
             detail: {
                 index: cell,
                 value
+            }
+        });
+        this.dispatchEvent(e);
+
+        if (this.checkAll()) this.dispatchEvent(new Event('solved'));
+
+        return true;
+    }
+
+    unset(cell: number) {
+        if (!Sudoku.cellIsInBounds(cell)) return false;
+        this.cells[cell] = -1;
+        const e = new CustomEvent('cell-set', {
+            detail: {
+                index: cell,
+                value: -1
             }
         });
         this.dispatchEvent(e);
