@@ -30,6 +30,14 @@ export class Sudoku extends EventTarget {
         return true;
     }
 
+    static getCellCoordinates(cell: number) {
+        if (!Sudoku.cellIsInBounds(cell)) return null;
+        const row = Math.floor(cell / MAX_VALUE);
+        const col = cell % MAX_VALUE;
+        const square = Math.floor(row / PUZZLE_ROOT) % PUZZLE_ROOT * PUZZLE_ROOT + Math.floor(col / PUZZLE_ROOT);
+        return { row, col, square };
+    }
+
     //Checks a squence of values from MIN_VALUE to MAX_VALUE for duplicates
     //return -1 for invalid, 1 for valid and 0 for possible but not fully filled out
     private static *v() {
@@ -62,7 +70,6 @@ export class Sudoku extends EventTarget {
         if (this.cells[cell] == value) return false;
 
         this.cells[cell] = value;
-        //TODO: Debounce
         try {
             const e = new CustomEvent('cell-set', {
                 detail: {
