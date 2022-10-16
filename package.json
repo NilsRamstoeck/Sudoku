@@ -5,6 +5,7 @@
   "main": "src/main.ts",
   "scripts": {
     "dev": "vite",
+    "build": "vite build",
     "test": "ts-mocha -p test/tsconfig.json test/all.test.ts"
   },
   "keywords": [

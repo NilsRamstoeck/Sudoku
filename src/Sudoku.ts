@@ -61,6 +61,7 @@ export class Sudoku extends EventTarget {
     }
 
     set(cell: number, value: number) {
+        if (value == -1) this.unset(cell);
         if (!Sudoku.cellIsInBounds(cell)) return false;
         if (!Sudoku.valueIsInBounds(value)) return false;
         if (this.cells[cell] == value) return false;
@@ -204,8 +205,8 @@ export class Sudoku extends EventTarget {
             const rowValidity = this.checkRow(i);
             const squareValidity = this.checkSquare(i);
 
-            if(colValidity == -1 || rowValidity == -1 || squareValidity == -1) return -1;
-            if(colValidity == 0 || rowValidity == 0 || squareValidity == 0) result = 0;
+            if (colValidity == -1 || rowValidity == -1 || squareValidity == -1) return -1;
+            if (colValidity == 0 || rowValidity == 0 || squareValidity == 0) result = 0;
         }
         return result;
     }

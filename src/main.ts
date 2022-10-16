@@ -158,7 +158,6 @@ async function solve(step: number | undefined) {
 
 function generate(){
     generateSudoku(30).cells.forEach((value, cell) => {
-        sudoku.unset(cell);
         sudoku.set(cell, value);
     })
 }
