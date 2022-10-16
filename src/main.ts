@@ -1,3 +1,4 @@
+import { generateSudoku } from "./Generator";
 import { Solver } from "./Solver";
 import { MAX_VALUE, MIN_VALUE, PUZZLE_ROOT, Sudoku } from "./Sudoku";
 
@@ -5,8 +6,8 @@ const sudoku = new Sudoku();
 const solver = new Solver(sudoku);
 const cells = [...document.querySelectorAll<HTMLElement>('.sudoku .cell')];
 
-// const puzzle = [1, 2, 3, -1, -1, -1, -1, -1, -1, 4, 5, 6, 2, 1, 3, 7, 9, 8, 7, 8, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
-
+const puzzle = [1, 2, 3, -1, -1, -1, -1, -1, -1, 4, 5, 6, 2, 1, 3, 7, 9, 8, 7, 8, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
+// const puzzle = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 6, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
 // const puzzle = [-1, -1, -1, 8, -1, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 2, -1, -1, 4, -1, -1, -1, -1, 3, -1, -1, -1, -1, 9, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 8, -1, -1, -1, 3, 7, -1, -1, -1, -1, -1, -1, 5, -1, -1, -1, 2, -1, 7, -1, -1, -1, 2, -1, 5, 1, -1, -1, 3, -1, -1];
 
 // puzzle[24] = 4;
@@ -44,16 +45,16 @@ cells.forEach((cell, index) => {
             const node = mutation.addedNodes[0];
             if (node && node.nodeName == '#text') {
                 const value = Number.parseInt(node.nodeValue || '');
-                sudoku.set(index, value);
+                sudoku.cells[index] = value;
             } else {
-                sudoku.unset(index);
+                sudoku.cells[index] = -1;
             }
         });
     })
     observer.observe(cell, { attributes: false, subtree: false, characterData: false, childList: true });
-    // cell.innerHTML = (puzzle[index] > 0 ? puzzle[index] : '') + '';
+    cell.innerHTML = (puzzle[index] > 0 ? puzzle[index] : '') + '';
     // cell.innerHTML = (sudoku.get(index) > 0 ? sudoku.get(index) : '') + '';
-    cell.setAttribute('index', index+'');
+    cell.setAttribute('index', index + '');
 })
 
 sudoku.addEventListener('cell-set', ((e: CustomEvent<{ value: number, index: number }>) => {
@@ -68,9 +69,9 @@ sudoku.addEventListener('cell-set', ((e: CustomEvent<{ value: number, index: num
         el.classList.toggle('valid', false);
     })
 
-    if (!solver.checkSolvable()) {
-        cells[index].classList.toggle('invalid', true);
-    }
+    // if (!solver.checkSolvable()) {
+    //     cells[index].classList.toggle('invalid', true);
+    // }
 
     const methods = [
         {
@@ -105,10 +106,10 @@ sudoku.addEventListener('cell-set', ((e: CustomEvent<{ value: number, index: num
 
 //Handle sudoku solved
 sudoku.addEventListener('solved', () => {
-    alert('DING DING DING');
+    // alert('DING DING DING');
 })
 
-async function solve(step=0) {
+async function solve(step:number|undefined) {
     return await solver.solve(step);
 }
 
@@ -163,4 +164,9 @@ function getHTMLSquare(square: number) {
 (<any>window).getHTMLRow = getHTMLRow;
 (<any>window).getHTMLSquare = getHTMLSquare
 
-setTimeout(() => { solve(300) }, 500);
+// generateSudoku(70).getCells().forEach((value, cell) => {
+//     sudoku.set(cell, value);
+// })
+
+// setTimeout(() => { solve(300) }, 500);
+// setTimeout(() => { solve() }, 500);

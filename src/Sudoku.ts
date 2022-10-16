@@ -5,11 +5,7 @@ export const PUZZLE_ROOT = Math.sqrt(MAX_VALUE);
 
 export class Sudoku extends EventTarget {
 
-    private cells: number[] = [];
-
-    getCells() {
-        return JSON.parse(JSON.stringify(this.cells)) as number[];
-    }
+    cells: number[] = [];
 
     constructor() {
         super();
