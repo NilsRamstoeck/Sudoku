@@ -1,16 +1,12 @@
 import { Solver } from "./Solver";
 import Sudoku from "./Sudoku";
 
-const cellsHTML = [...document.querySelectorAll<HTMLElement>('.sudoku .cell')];
-
-
 export function generateSudoku(prefilledTiles: number) {
     const sudoku = new Sudoku();
     const solver = new Solver(sudoku);
     const cells: number[] = [];
-    sudoku.getCells().forEach((_, index) => cells.push(index));
-    console.log(solver);
-
+    sudoku.cells.forEach((_, index) => cells.push(index));
+    
     for (let i = 0; i < prefilledTiles; i++) {
         const randomIndex = Math.floor(Math.random() * cells.length) - 1;
         const randomCell = cells[randomIndex];
@@ -22,7 +18,6 @@ export function generateSudoku(prefilledTiles: number) {
             const randomValue = Math.min(Math.floor(Math.random() * 9) + 1, 9);
             triedValues.add(randomValue);
             sudoku.set(randomCell, randomValue);
-            cellsHTML[randomCell].innerHTML = randomValue+'';
         } while (!solver.checkSolvable() && iterations < 1000);
 
         if (iterations == 1000) {
