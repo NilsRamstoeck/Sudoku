@@ -1,60 +1,107 @@
-html, body{
+:root {
+    --clr-background: rgb(37, 37, 37);
+    --clr-cell: grey;
+    --clr-cell-border: black;
+    --clr-cell-valid: rgb(54, 99, 54);
+    --clr-cell-invalid: rgb(94, 37, 37);
+    --clr-cell-hovered: rgba(0, 0, 0, 0.14);
+    --clr-cell-selected: rgba(0, 0, 0, 0.2);
+    --clr-cell-font: white;
+}
+
+html,
+body {
     padding: 0;
     margin: 0;
 }
 
-.wrapper{
+.wrapper {
     height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-direction: column;
+    background: var(--clr-background);
+    gap: 2em;
 }
 
-.sudoku{
-    height: min(80vh, 80vw);
-    width: min(80vh, 80vw);
-    background-color: gray;
-    border-radius: 5px;
+.sudoku {
+    width: min(80vw, 80vh);
+    aspect-ratio: 1/0.9999;
+    border-radius: 10px;
     display: grid;
     grid-template-rows: repeat(9, 1fr);
     grid-template-columns: repeat(9, 1fr);
+    --border-width: 2px;
+    gap: var(--border-width);
+    overflow: hidden;
+    border: 4px solid var(--clr-cell-border);
+    background-color: var(--clr-cell-border);
 }
 
-.cell{
+.cell {
     position: relative;
-    border: 1px solid white;
+    background-color: var(--clr-cell);
     display: flex;
     align-items: center;
     justify-content: center;
     font-family: sans-serif;
     font-size: min(5vh, 5vw);
-    color: white;
+    color: var(--clr-cell-font);
     user-select: none;
+    overflow: visible;
 }
 
-.cell::after{
+.cell:nth-child(3n):not(:nth-child(9n)) {
+    border-right: 2px solid var(--clr-cell-border);
+}
+
+.cell:nth-child(n+19):nth-child(-n+27),
+.cell:nth-child(n+46):nth-child(-n+54) {
+    border-bottom: 2px solid var(--clr-cell-border);
+}
+
+
+/* 
+.cell::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-left: 4px solid var(--clr-cell-border);
+    border-top: 4px solid var(--clr-cell-border);
+}
+
+.cell:nth-child(n + 73)::before {
+    border-bottom: 4px solid var(--clr-cell-border);
+}
+
+.cell:nth-child(9n)::before {
+    border-right: 4px solid var(--clr-cell-border);
+} */
+
+.cell::after {
+    position: absolute;
     font-size: 13px;
     font-weight: bolder;
     color: black;
-    position: absolute;
     content: attr(index);
     width: 100%;
     height: 100%;
 }
 
-.cell.valid{
-    background-color: rgba(0, 255, 0, 0.2);
+.cell.valid {
+    background-color: rgb(54, 99, 54);
 }
 
-.cell.invalid{
-    background-color: rgba(255, 0, 0, 0.2);
+.cell.invalid {
+    background-color: rgb(94, 37, 37);
 }
 
-.cell:hover::after{
+.cell:hover::after {
     background-color: rgba(0, 0, 0, 0.14);
 }
 
-.cell.selected::after{
+.cell.selected::after {
     background-color: rgba(0, 0, 0, 0.2);
 }

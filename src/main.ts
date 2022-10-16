@@ -50,7 +50,7 @@ cells.forEach((cell, index) => {
     })
     observer.observe(cell, { attributes: false, subtree: false, characterData: false, childList: true });
     // cell.innerHTML = (puzzle[index] > 0 ? puzzle[index] : '') + '';
-    cell.setAttribute('index', index + '');
+    // cell.setAttribute('index', index + '');
 })
 
 sudoku.addEventListener('cell-set', ((e: CustomEvent<{ value: number, index: number }>) => {
