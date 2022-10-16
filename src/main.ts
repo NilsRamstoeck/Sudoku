@@ -5,9 +5,11 @@ const sudoku = new Sudoku();
 const solver = new Solver(sudoku);
 const cells = [...document.querySelectorAll<HTMLElement>('.sudoku .cell')];
 
-const puzzle = [1, 2, 3, -1, -1, -1, -1, -1, -1, 4, 5, 6, 2, 1, 3, 7, 9, 8, 7, 8, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
+// const puzzle = [1, 2, 3, -1, -1, -1, -1, -1, -1, 4, 5, 6, 2, 1, 3, 7, 9, 8, 7, 8, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
 
-puzzle[24] = 4;
+// const puzzle = [-1, -1, -1, 8, -1, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 2, -1, -1, 4, -1, -1, -1, -1, 3, -1, -1, -1, -1, 9, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 8, -1, -1, -1, 3, 7, -1, -1, -1, -1, -1, -1, 5, -1, -1, -1, 2, -1, 7, -1, -1, -1, 2, -1, 5, 1, -1, -1, 3, -1, -1];
+
+// puzzle[24] = 4;
 
 //Selection of cells
 document.addEventListener('click', (e) => {
@@ -49,8 +51,9 @@ cells.forEach((cell, index) => {
         });
     })
     observer.observe(cell, { attributes: false, subtree: false, characterData: false, childList: true });
-    cell.innerHTML = (puzzle[index] > 0 ? puzzle[index] : '') + '';
-    // cell.setAttribute('index', index+'');
+    // cell.innerHTML = (puzzle[index] > 0 ? puzzle[index] : '') + '';
+    // cell.innerHTML = (sudoku.get(index) > 0 ? sudoku.get(index) : '') + '';
+    cell.setAttribute('index', index+'');
 })
 
 sudoku.addEventListener('cell-set', ((e: CustomEvent<{ value: number, index: number }>) => {
@@ -105,7 +108,7 @@ sudoku.addEventListener('solved', () => {
     alert('DING DING DING');
 })
 
-async function solve(step: number) {
+async function solve(step=0) {
     return await solver.solve(step);
 }
 

@@ -1,5 +1,8 @@
 import Sudoku, { MAX_VALUE, MIN_VALUE, PUZZLE_ROOT } from "./Sudoku";
 
+
+type Option = { index: number, options: Set<Number> };
+
 export class Solver {
     sudoku: Sudoku;
 
@@ -7,95 +10,68 @@ export class Solver {
         this.sudoku = sudoku;
     }
 
-    async solve(step = 0) {
-        if (!this.checkSolvable()) return false;
-        const wfc = this.wfc();
+    async solve(step = 500) {
+        if(!this.checkSolvable())return;
+        const wfc = this.wfc(this.getCellOptions());
+        performance.mark('start solve');
         let state: ReturnType<typeof wfc.next>;
         do {
             state = wfc.next();
+            if (state.done) break;
+            this.sudoku.set(state.value.cell, state.value.value);
             const animation = new Promise<void>(resolve => setTimeout(_ => resolve(), step));
             if (step > 0) await animation;
         } while (!state.done);
+        performance.mark('stop solve');
+        console.log(performance.measure('solve', 'start solve', 'stop solve'))
         return true;
     }
 
-    checkSolvable() {
-        //if in one row, column or square the amount of options is smaller than the fields that share them
-        //a sudoku is not solvable
-        const cellOptions = this.getCellOptions();
-
-        type Option = typeof cellOptions[0];
-
-        const contextsList: Option[][][] = [];
-
-        const rows: Option[][] = [];
-        const columns: Option[][] = [];
-        const squares: Option[][] = [];
-
-        for (let i = 0; i < MAX_VALUE; i++) {
-            rows.push([]);
-            columns.push([]);
-            squares.push([]);
-        }
-
-        for (const option of cellOptions) {
-            const coords = Sudoku.getCellCoordinates(option.index)!;
-            rows[coords.row].push(option);
-            columns[coords.col].push(option);
-            squares[coords.square].push(option);
-        }
-
-        contextsList.push(rows);
-        contextsList.push(columns);
-        contextsList.push(squares);
-
-        for (const contexts of contextsList) {
-            for (const context of contexts) {
-                //get unique option sets
-                const optionSets: { count: number, options: number[] }[] = [];
-                for (const option of context) {
-
-                    let duplicate = false;
-                    let unsolvable = false;
-                    optionSets.forEach(compareOptions => {
-                        if (duplicate) return;
-                        if (compareOptions.options.length > option.options.length) {
-                            duplicate = compareOptions.options.every((value, index) => value == option.options[index]);
-                        } else {
-                            duplicate = option.options.every((value, index) => value == compareOptions.options[index]);
-                        }
-                        if (!duplicate) return;
-                        compareOptions.count++;
-                        unsolvable = compareOptions.count > compareOptions.options.length;
-                    });
-                    if (unsolvable) return false;
-                    if (!duplicate) optionSets.push({
-                        count: 1,
-                        options: option.options
-                    });
-                }
-            }
-        }
-
-        return true;
+    checkSolvable(): boolean {
+        performance.mark('start checkSolvable');
+        const wfc = this.wfc(this.getCellOptions());
+        let state;
+        do {
+            state = wfc.next();
+        } while (!state.done)
+        performance.mark('stop checkSolvable');
+        console.log(performance.measure('checkSolvable', 'start checkSolvable', 'stop checkSolvable'))
+        return state.value;        
     }
 
-    *wfc() {
+    *wfc(cellOptions: Option[]) {
+        const updateCellOptions = (index: number, value: number) => {
+            cellOptions.splice(0, 1);
+            const coords = Sudoku.getCellCoordinates(index)!;
+            cellOptions.forEach(contextOption => {
+                const contextCoords = Sudoku.getCellCoordinates(contextOption.index)!;
+                const sharesRow = contextCoords.row == coords.row;
+                const sharesCol = contextCoords.col == coords.col;
+                const sharesSquare = contextCoords.square == coords.square;
+                if (!(sharesRow || sharesCol || sharesSquare)) return;
+                contextOption.options.delete(value);
+            });
+        }
+
         while (true) {
-            const cellOptions = this.getCellOptions();
             if (cellOptions.length == 0) return true;
+            cellOptions.sort((a, b) => {
+                if (a.options.size < b.options.size) return -1;
+                if (a.options.size > b.options.size) return 1;
+                if (a.index < b.index) return -1;
+                if (a.index > b.index) return 1;
+                return 0;
+            });
+            const cellOption = cellOptions[0];
+            if (cellOption.options.size == 0) return false;
+            const cellValue = cellOption.options.values().next().value;
 
-            for (const cell of cellOptions) {
-                if (cell.options.length == 0) return false;
-                if (cell.options.length > 1) break;
-                this.sudoku.set(cell.index, cell.options[0]);
-                yield;
-            }
-
-            if (cellOptions[0].options.length > 1) {
-                this.sudoku.set(cellOptions[0].index, cellOptions[0].options[0]);
-                yield;
-                continue;
+            if (cellOption.options.size >= 1) {
+                yield {
+                    cell: cellOption.index,
+                    value: cellValue
+                };
+                updateCellOptions(cellOption.index, cellValue);
             }
 
         }
@@ -113,10 +89,7 @@ export class Solver {
             possibleValues.push(i + 1);
         }
 
-        const cellOptions: {
-            index: number,
-            options: number[]
-        }[] = [];
+        const cellOptions: Option[] = [];
 
         for (let i = 0; i < this.sudoku.getCells().length; i++) {
             const cellValue = this.sudoku.get(i);
@@ -138,10 +111,9 @@ export class Solver {
 
             cellOptions.push({
                 index: i,
-                options: possibleValues.filter(val => !values.includes(val))
+                options: new Set(possibleValues.filter(val => !values.includes(val)))
             });
         }
-        cellOptions.sort((a, b) => a.options.length - b.options.length);
         return cellOptions;
     }
 

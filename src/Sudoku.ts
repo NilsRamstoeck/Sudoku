@@ -8,7 +8,7 @@ export class Sudoku extends EventTarget {
     private cells: number[] = [];
 
     getCells() {
-        return JSON.parse(JSON.stringify(this.cells));
+        return JSON.parse(JSON.stringify(this.cells)) as number[];
     }
 
     constructor() {
@@ -79,7 +79,7 @@ export class Sudoku extends EventTarget {
             });
             this.dispatchEvent(e);
 
-            if (this.checkAll()) this.dispatchEvent(new Event('solved'));
+            if (this.checkAll() == 1) this.dispatchEvent(new Event('solved'));
         } catch (_) { };
 
         return true;
@@ -202,10 +202,14 @@ export class Sudoku extends EventTarget {
     }
 
     checkAll() {
-        let result = true;
+        let result = 1;
         for (let i = 0; i < MAX_VALUE; i++) {
-            result &&= this.checkColumn(i) + this.checkRow(i) + this.checkSquare(i) == 3;
-            if (!result) return result;  //exit early
+            const colValidity = this.checkColumn(i);
+            const rowValidity = this.checkRow(i);
+            const squareValidity = this.checkSquare(i);
+
+            if(colValidity == -1 || rowValidity == -1 || squareValidity == -1) return -1;
+            if(colValidity == 0 || rowValidity == 0 || squareValidity == 0) result = 0;
         }
         return result;
     }
