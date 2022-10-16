@@ -107,9 +107,6 @@ sudoku.addEventListener('solved', () => {
     // alert('DING DING DING');
 })
 
-async function solve(step: number | undefined) {
-    return await solver.solve(step);
-}
 
 function getHTMLColumn(col: number) {
     if (!Sudoku.valueIsInBounds(col + 1)) return [];
@@ -133,38 +130,48 @@ function getHTMLRow(row: number) {
 
 function getHTMLSquare(square: number) {
     if (!Sudoku.valueIsInBounds(square + 1)) return [];
-
+    
     const values: HTMLElement[] = [];
     for (let i = 0; i < MAX_VALUE; i++) {
         //Get column and row of first cell of the square
         const squareRow = Math.floor(square / PUZZLE_ROOT) * PUZZLE_ROOT;
         const squareCol = square % PUZZLE_ROOT * PUZZLE_ROOT;
-
+        
         //get current column of row of the index within local square space (between 0 and PUZZLE_ROOT)
         const colMod = i % PUZZLE_ROOT;
         const rowMod = Math.floor(i / PUZZLE_ROOT);
-
+        
         //Translate local square space to puzzle space
         const row = squareRow + rowMod;
         const col = squareCol + colMod;
-
+        
         const index = row * MAX_VALUE + col;
         values.push(cells[index]);
     }
     return values;
 }
 
-//expose solve and sudoku
+async function solve(step: number | undefined) {
+    step = 100;
+    return await solver.solve(step);
+}
+
+function generate(){
+    generateSudoku(30).cells.forEach((value, cell) => {
+        sudoku.unset(cell);
+        sudoku.set(cell, value);
+    })
+}
+
+//expose stuff
 (<any>window).solve = solve;
+(<any>window).generate = generate;
 (<any>window).solver = solver;
 (<any>window).sudoku = sudoku;
 (<any>window).getHTMLColumn = getHTMLColumn;
 (<any>window).getHTMLRow = getHTMLRow;
 (<any>window).getHTMLSquare = getHTMLSquare
 
-generateSudoku(70).cells.forEach((value, cell) => {
-    sudoku.set(cell, value);
-})
 
 //
 // setTimeout(() => { solve(300) }, 500);
